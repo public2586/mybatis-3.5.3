@@ -114,16 +114,23 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     try {
       boolean autoCommit;
       try {
+        //获取当前连接的事务是否为自动提交方式
         autoCommit = connection.getAutoCommit();
       } catch (SQLException e) {
         // Failover to true, as most poor drivers
         // or databases won't support transactions
+        //当前数据库驱动提供的连接不支持事务，则可能会抛出异常
         autoCommit = true;
       }
+      //获取 mybatis_config.xml 配置文件中配置的Environment对象
       final Environment environment = configuration.getEnvironment();
+      //获取的 TransactionFactory 对象
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      //创建 Transaction 对象
       final Transaction tx = transactionFactory.newTransaction(connection);
+      //根据配置创建 Executor 对象
       final Executor executor = configuration.newExecutor(tx, execType);
+      //创建 DefaultSqlSession 对象
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
